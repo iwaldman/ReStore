@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
+import { Product } from './product'
 
 function App() {
-  const [products, setProducts] = useState([{ name: 'Apples', price: 3.99 }])
+  const [products, setProducts] = useState<Product[]>([])
 
   useEffect(() => {
     fetch('http://localhost:5000/api/products')
@@ -14,7 +15,7 @@ function App() {
       <h1>ReStore</h1>
       <ul>
         {products.map((product) => (
-          <li key={product.name}>
+          <li key={product.id}>
             {product.name} - {product.price}
           </li>
         ))}
