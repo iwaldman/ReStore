@@ -1,10 +1,17 @@
-import { AppBar, Typography } from '@mui/material'
-import React from 'react'
+import { AppBar, Box, Switch, Typography } from '@mui/material'
 
-function Header() {
+interface Props {
+  darkMode: boolean
+  handleThemeChange: () => void
+}
+
+function Header({ darkMode, handleThemeChange }: Props) {
   return (
     <AppBar position="static" sx={{ mb: 4 }}>
-      <Typography variant="h6">RE_STORE</Typography>
+      <Box display="flex" alignItems="center">
+        <Typography variant="h6">RE_STORE</Typography>
+        <Switch checked={darkMode} onChange={handleThemeChange} />
+      </Box>
     </AppBar>
   )
 }
