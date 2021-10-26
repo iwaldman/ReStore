@@ -8,7 +8,6 @@ import {
   CardMedia,
   Typography,
 } from '@mui/material'
-import { fontWeight } from '@mui/system'
 import { Link } from 'react-router-dom'
 
 import { Product } from '../../app/models/product'
