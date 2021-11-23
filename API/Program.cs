@@ -1,44 +1,56 @@
-using System;
-using System.Threading.Tasks;
-using API.Data;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using API.Middleware;
 
-namespace API
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+
+builder.Services.AddControllers();
+
+builder.Services.AddSwaggerGen(c =>
 {
-    public class Program
-    {
-        public static async Task Main(string[] args)
-        {
-            var host = CreateHostBuilder(args).Build();
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
+});
 
-            using var scope = host.Services.CreateScope();
+builder.Services.AddDbContext<StoreContext>(opt =>
+{
+    opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
 
-            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+builder.Services.AddCors();
 
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+var app = builder.Build();
 
-            try
-            {
-                await context.Database.MigrateAsync();
-                DbInitializer.Initialize(context);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Problem migrating data");
-            }
+app.UseMiddleware<ExceptionMiddleware>();
 
-            await host.RunAsync();
-        }
-
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
-    }
+if (builder.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1"));
 }
+
+app.UseHttpsRedirection();
+
+app.UseCors(opt => opt.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000"));
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+using var scope = app.Services.CreateScope();
+
+var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+
+var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+try
+{
+    await context.Database.MigrateAsync();
+    DbInitializer.Initialize(context);
+}
+catch (Exception ex)
+{
+    logger.LogError(ex, "Problem migrating data");
+}
+
+await app.RunAsync();
+

@@ -10,11 +10,11 @@ import {
 } from '@mui/material'
 import axios from 'axios'
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router'
+import { useParams } from 'react-router-dom'
 import { Product } from '../../app/models/product'
 
 function ProductDetails() {
-  const { id } = useParams<{ id: string }>()
+  const { id } = useParams()
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
 
